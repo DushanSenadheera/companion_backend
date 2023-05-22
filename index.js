@@ -7,18 +7,20 @@ const rateLimit = require("express-rate-limit");
 const AdminModel = require('./models/Admin');
 const UserModel = require('./models/User');
 const PostModel = require('./models/Post');
+const ApprovalModel = require('./models/Approval');
+const EventModel = require('./models/Event');
+//const DonationModel = require('./models/Donation');
 
 const app = express();
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
 
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.use(limiter);
-
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
-});
 
 mongoose.connect('mongodb+srv://dcsenadheera:RTvb56@companiondb.vwefz4y.mongodb.net/CompanionDB', {
     useNewUrlParser: true,
@@ -141,6 +143,76 @@ const storage = multer.diskStorage({
 
     try {
         await post.save();
+        res.send("Inserted Data");
+    } catch (err) {
+        console.log(err);
+    }
+
+  });
+
+  app.post('/approval', upload.single('file'), async (req, res) => {
+    const fileName = req.file;
+    res.send('File uploaded successfully!');
+
+    const postDesc = req.body.postDescription;
+    const userEmail = req.body.userEmail;
+    const userLocation = req.body.userLocation;
+
+    const approve = new ApprovalModel({
+        fileName: fileName,
+        postDesc: postDesc,
+        userEmail: userEmail,
+        userLocation: userLocation,
+    });
+
+    try {
+        await approve.save();
+        res.send("Inserted Data");
+    } catch (err) {
+        console.log(err);
+    }
+
+  });
+
+  app.post('/donation', async (req, res) => {
+
+    const postDesc = req.body.postDescription;
+    const userEmail = req.body.userEmail;
+    const userLocation = req.body.userLocation;
+    const userAmount = req.body.userAmount;
+
+    const donation = new DonationModel({
+        userAmount: userAmount,
+        userEmail: userEmail,
+        postDesc: postDesc,
+        userLocation: userLocation
+    });
+
+    try {
+        await donation.save();
+        res.send("Inserted Data");
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+app.post('/events', upload.single('file'), async (req, res) => {
+    const fileName = req.file;
+    res.send('File uploaded successfully!');
+
+    const postDesc = req.body.postDescription;
+    const userEmail = req.body.userEmail;
+    const userLocation = req.body.userLocation;
+
+    const event = new EventModel({
+        fileName: fileName,
+        postDesc: postDesc,
+        userEmail: userEmail,
+        userLocation: userLocation,
+    });
+
+    try {
+        await event.save();
         res.send("Inserted Data");
     } catch (err) {
         console.log(err);
